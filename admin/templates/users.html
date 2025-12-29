@@ -1,5 +1,5 @@
 {{define "content"}}
-<div class="space-y-6" x-data="{ confirmBan: null, confirmUnban: null }">
+<div class="space-y-6" x-data="{ confirmBan: null, confirmUnban: null, basePath: '{{.BasePath}}' }">
     <div class="flex justify-between items-center">
         <h1 class="text-3xl font-bold text-gray-900">Users</h1>
     </div>
@@ -66,10 +66,10 @@
             </div>
             <div class="flex gap-2">
                 {{if gt .Page 1}}
-                <a href="/admin/users?page={{subtract .Page 1}}" class="px-3 py-1 border rounded text-sm hover:bg-gray-50">Previous</a>
+                <a href="{{$.BasePath}}/admin/users?page={{subtract .Page 1}}" class="px-3 py-1 border rounded text-sm hover:bg-gray-50">Previous</a>
                 {{end}}
                 {{if lt .Page .TotalPages}}
-                <a href="/admin/users?page={{add .Page 1}}" class="px-3 py-1 border rounded text-sm hover:bg-gray-50">Next</a>
+                <a href="{{$.BasePath}}/admin/users?page={{add .Page 1}}" class="px-3 py-1 border rounded text-sm hover:bg-gray-50">Next</a>
                 {{end}}
             </div>
         </div>
@@ -82,7 +82,7 @@
             <p class="text-gray-600 mb-6">Are you sure you want to ban this user? They will not be able to post comments.</p>
             <div class="flex justify-end gap-3">
                 <button @click="confirmBan = null" class="px-4 py-2 border rounded-md hover:bg-gray-50">Cancel</button>
-                <form method="POST" :action="'/admin/api/users/' + confirmBan + '/ban'" class="inline">
+                <form method="POST" :action="basePath + '/admin/api/users/' + confirmBan + '/ban'" class="inline">
                     <button type="submit" class="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700">Ban User</button>
                 </form>
             </div>
@@ -95,7 +95,7 @@
             <p class="text-gray-600 mb-6">Are you sure you want to unban this user?</p>
             <div class="flex justify-end gap-3">
                 <button @click="confirmUnban = null" class="px-4 py-2 border rounded-md hover:bg-gray-50">Cancel</button>
-                <form method="POST" :action="'/admin/api/users/' + confirmUnban + '/unban'" class="inline">
+                <form method="POST" :action="basePath + '/admin/api/users/' + confirmUnban + '/unban'" class="inline">
                     <button type="submit" class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700">Unban User</button>
                 </form>
             </div>

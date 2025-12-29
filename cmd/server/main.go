@@ -108,7 +108,7 @@ func main() {
 
 	if cfg.Admin.Username != "" && cfg.Admin.PasswordHash != "" {
 		adminAuth := custommw.NewAdminAuth(cfg.Admin.Username, cfg.Admin.PasswordHash)
-		adminWebHandler := handler.NewAdminWebHandler(userService, commentService, admin.TemplateFS)
+		adminWebHandler := handler.NewAdminWebHandler(userService, commentService, admin.TemplateFS, cfg.Server.BasePath)
 
 		adminGroup := e.Group("/admin", adminAuth.Middleware())
 		adminGroup.GET("", adminWebHandler.Dashboard)

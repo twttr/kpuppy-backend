@@ -16,6 +16,7 @@ type AdminWebHandler struct {
 	userService    *usecase.UserService
 	commentService *usecase.CommentService
 	templates      map[string]*template.Template
+	basePath       string
 }
 
 type DashboardStats struct {
@@ -42,7 +43,7 @@ type UserView struct {
 	CreatedAtFormatted string
 }
 
-func NewAdminWebHandler(userService *usecase.UserService, commentService *usecase.CommentService, fs embed.FS) *AdminWebHandler {
+func NewAdminWebHandler(userService *usecase.UserService, commentService *usecase.CommentService, fs embed.FS, basePath string) *AdminWebHandler {
 	funcMap := template.FuncMap{
 		"add":      func(a, b int) int { return a + b },
 		"subtract": func(a, b int) int { return a - b },
@@ -71,6 +72,7 @@ func NewAdminWebHandler(userService *usecase.UserService, commentService *usecas
 		userService:    userService,
 		commentService: commentService,
 		templates:      templates,
+		basePath:       basePath,
 	}
 }
 
@@ -218,11 +220,11 @@ func (h *AdminWebHandler) DeleteComment(c echo.Context) error {
 
 	referer := c.Request().Referer()
 	if referer == "" {
-		referer = "/admin/comments"
+		referer = h.basePath + "/admin/comments"
 	}
 
 	if _, err := h.commentService.AdminDelete(c.Request().Context(), commentID); err != nil {
-		return c.Redirect(http.StatusSeeOther, "/admin/comments?error=delete_failed")
+		return c.Redirect(http.StatusSeeOther, h.basePath+"/admin/comments?error=delete_failed")
 	}
 
 	return c.Redirect(http.StatusSeeOther, referer)
@@ -232,20 +234,20 @@ func (h *AdminWebHandler) BanUser(c echo.Context) error {
 	userID := c.Param("id")
 
 	if err := h.userService.SetBanned(c.Request().Context(), userID, true); err != nil {
-		return c.Redirect(http.StatusSeeOther, "/admin/users?error=ban_failed")
+		return c.Redirect(http.StatusSeeOther, h.basePath+"/admin/users?error=ban_failed")
 	}
 
-	return c.Redirect(http.StatusSeeOther, "/admin/users")
+	return c.Redirect(http.StatusSeeOther, h.basePath+"/admin/users")
 }
 
 func (h *AdminWebHandler) UnbanUser(c echo.Context) error {
 	userID := c.Param("id")
 
 	if err := h.userService.SetBanned(c.Request().Context(), userID, false); err != nil {
-		return c.Redirect(http.StatusSeeOther, "/admin/users?error=unban_failed")
+		return c.Redirect(http.StatusSeeOther, h.basePath+"/admin/users?error=unban_failed")
 	}
 
-	return c.Redirect(http.StatusSeeOther, "/admin/users")
+	return c.Redirect(http.StatusSeeOther, h.basePath+"/admin/users")
 }
 
 func (h *AdminWebHandler) ToggleSpoiler(c echo.Context) error {
@@ -253,21 +255,23 @@ func (h *AdminWebHandler) ToggleSpoiler(c echo.Context) error {
 
 	referer := c.Request().Referer()
 	if referer == "" {
-		referer = "/admin/comments"
+		referer = h.basePath + "/admin/comments"
 	}
 
 	if _, err := h.commentService.AdminToggleSpoiler(c.Request().Context(), commentID); err != nil {
-		return c.Redirect(http.StatusSeeOther, "/admin/comments?error=toggle_failed")
+		return c.Redirect(http.StatusSeeOther, h.basePath+"/admin/comments?error=toggle_failed")
 	}
 
 	return c.Redirect(http.StatusSeeOther, referer)
 }
 
-func (h *AdminWebHandler) render(c echo.Context, name string, data interface{}) error {
+func (h *AdminWebHandler) render(c echo.Context, name string, data map[string]interface{}) error {
 	tmpl, ok := h.templates[name]
 	if !ok {
 		return echo.NewHTTPError(http.StatusInternalServerError, "template not found")
 	}
+
+	data["BasePath"] = h.basePath
 
 	c.Response().Header().Set("Content-Type", "text/html; charset=utf-8")
 	c.Response().WriteHeader(http.StatusOK)

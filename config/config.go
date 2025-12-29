@@ -16,8 +16,9 @@ type Config struct {
 }
 
 type ServerConfig struct {
-	Port int
-	Host string
+	Port     int
+	Host     string
+	BasePath string
 }
 
 type DatabaseConfig struct {
@@ -43,8 +44,9 @@ func Load() *Config {
 
 	return &Config{
 		Server: ServerConfig{
-			Port: getEnvInt("PORT", 8080),
-			Host: getEnv("HOST", "0.0.0.0"),
+			Port:     getEnvInt("PORT", 8080),
+			Host:     getEnv("HOST", "0.0.0.0"),
+			BasePath: getEnv("BASE_PATH", ""),
 		},
 		Database: DatabaseConfig{
 			Path: getEnv("DB_PATH", "./data/kpuppy.db"),
