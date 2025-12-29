@@ -1,0 +1,19 @@
+services:
+  api:
+    build: .
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./data:/app/data
+    environment:
+      - PORT=8080
+      - HOST=0.0.0.0
+      - DB_PATH=/app/data/kpuppy.db
+      - ADMIN_USER=admin
+      - ADMIN_PASS_HASH=${ADMIN_PASS_HASH}
+      - RATE_LIMIT=true
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 256M

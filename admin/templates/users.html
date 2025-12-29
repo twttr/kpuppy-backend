@@ -1,0 +1,105 @@
+{{define "content"}}
+<div class="space-y-6" x-data="{ confirmBan: null, confirmUnban: null }">
+    <div class="flex justify-between items-center">
+        <h1 class="text-3xl font-bold text-gray-900">Users</h1>
+    </div>
+
+    <div class="bg-white rounded-lg shadow overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">User</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Joined</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    {{range .Users}}
+                    <tr class="{{if .IsBanned}}bg-red-50{{end}}">
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="flex items-center">
+                                {{if .Avatar}}
+                                <img src="{{.Avatar}}" alt="" class="h-10 w-10 rounded-full mr-3">
+                                {{else}}
+                                <div class="h-10 w-10 rounded-full bg-gray-300 mr-3 flex items-center justify-center">
+                                    <span class="text-gray-600 font-medium">{{slice .Username 0 1}}</span>
+                                </div>
+                                {{end}}
+                                <div class="text-sm font-medium text-gray-900">{{.Username}}</div>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {{.CreatedAtFormatted}}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            {{if .IsBanned}}
+                            <span class="px-2 py-1 text-xs font-medium rounded-full bg-red-100 text-red-800">Banned</span>
+                            {{else}}
+                            <span class="px-2 py-1 text-xs font-medium rounded-full bg-green-100 text-green-800">Active</span>
+                            {{end}}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm">
+                            {{if .IsBanned}}
+                            <button @click="confirmUnban = '{{.ID}}'"
+                                class="text-green-600 hover:text-green-900">Unban</button>
+                            {{else}}
+                            <button @click="confirmBan = '{{.ID}}'"
+                                class="text-red-600 hover:text-red-900">Ban</button>
+                            {{end}}
+                        </td>
+                    </tr>
+                    {{else}}
+                    <tr>
+                        <td colspan="4" class="px-6 py-4 text-center text-gray-500">No users found</td>
+                    </tr>
+                    {{end}}
+                </tbody>
+            </table>
+        </div>
+
+        {{if gt .TotalPages 1}}
+        <div class="px-6 py-4 border-t border-gray-200 flex justify-between items-center">
+            <div class="text-sm text-gray-500">
+                Page {{.Page}} of {{.TotalPages}} ({{.TotalItems}} total)
+            </div>
+            <div class="flex gap-2">
+                {{if gt .Page 1}}
+                <a href="/admin/users?page={{subtract .Page 1}}" class="px-3 py-1 border rounded text-sm hover:bg-gray-50">Previous</a>
+                {{end}}
+                {{if lt .Page .TotalPages}}
+                <a href="/admin/users?page={{add .Page 1}}" class="px-3 py-1 border rounded text-sm hover:bg-gray-50">Next</a>
+                {{end}}
+            </div>
+        </div>
+        {{end}}
+    </div>
+
+    <div x-show="confirmBan" x-cloak class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div class="bg-white rounded-lg shadow-xl p-6 max-w-md w-full mx-4">
+            <h3 class="text-lg font-medium text-gray-900 mb-4">Confirm Ban</h3>
+            <p class="text-gray-600 mb-6">Are you sure you want to ban this user? They will not be able to post comments.</p>
+            <div class="flex justify-end gap-3">
+                <button @click="confirmBan = null" class="px-4 py-2 border rounded-md hover:bg-gray-50">Cancel</button>
+                <form method="POST" :action="'/admin/api/users/' + confirmBan + '/ban'" class="inline">
+                    <button type="submit" class="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700">Ban User</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div x-show="confirmUnban" x-cloak class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div class="bg-white rounded-lg shadow-xl p-6 max-w-md w-full mx-4">
+            <h3 class="text-lg font-medium text-gray-900 mb-4">Confirm Unban</h3>
+            <p class="text-gray-600 mb-6">Are you sure you want to unban this user?</p>
+            <div class="flex justify-end gap-3">
+                <button @click="confirmUnban = null" class="px-4 py-2 border rounded-md hover:bg-gray-50">Cancel</button>
+                <form method="POST" :action="'/admin/api/users/' + confirmUnban + '/unban'" class="inline">
+                    <button type="submit" class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700">Unban User</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{{end}}

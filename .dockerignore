@@ -1,0 +1,12 @@
+.git
+.gitignore
+.dockerignore
+*.md
+.env
+.env.*
+data/
+*.db
+*.out
+.claude/
+.idea/
+.vscode/

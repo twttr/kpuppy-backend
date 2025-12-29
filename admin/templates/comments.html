@@ -1,0 +1,129 @@
+{{define "content"}}
+<div class="space-y-6" x-data="{ confirmDelete: null, confirmSpoiler: null }">
+    <div class="flex justify-between items-center">
+        <h1 class="text-3xl font-bold text-gray-900">Comments</h1>
+    </div>
+
+    <div class="bg-white rounded-lg shadow">
+        <div class="px-6 py-4 border-b border-gray-200">
+            <form method="GET" action="/admin/comments" class="flex flex-wrap gap-4">
+                <input type="text" name="search" value="{{.Search}}" placeholder="Search comments..."
+                    class="flex-1 min-w-48 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 px-3 py-2 border">
+                <input type="text" name="user" value="{{.UserFilter}}" placeholder="Filter by user..."
+                    class="w-40 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 px-3 py-2 border">
+                <button type="submit" class="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700">
+                    Search
+                </button>
+            </form>
+        </div>
+
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Item ID</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">User</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Comment</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    {{range .Comments}}
+                    <tr class="{{if .IsDeleted}}bg-red-50{{end}}">
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="text-sm font-medium text-gray-900">{{.KinopubItemID}}</div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="text-sm font-medium text-gray-900">{{.User.Username}}</div>
+                        </td>
+                        <td class="px-6 py-4">
+                            <div class="text-sm text-gray-900 max-w-md truncate">
+                                {{if .Spoiler}}<span class="bg-yellow-100 text-yellow-800 text-xs px-2 py-1 rounded mr-2">SPOILER</span>{{end}}
+                                {{.Text}}
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {{.CreatedAtFormatted}}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            {{if .IsDeleted}}
+                            <span class="px-2 py-1 text-xs font-medium rounded-full bg-red-100 text-red-800">Deleted</span>
+                            {{else}}
+                            <span class="px-2 py-1 text-xs font-medium rounded-full bg-green-100 text-green-800">Active</span>
+                            {{end}}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm space-x-2">
+                            {{if not .IsDeleted}}
+                            <button @click="confirmSpoiler = '{{.ID}}'"
+                                class="{{if .Spoiler}}text-yellow-600 hover:text-yellow-900{{else}}text-gray-600 hover:text-gray-900{{end}}">
+                                {{if .Spoiler}}Remove Spoiler{{else}}Mark Spoiler{{end}}
+                            </button>
+                            <span class="text-gray-300">|</span>
+                            {{end}}
+                            <button @click="confirmDelete = {id: '{{.ID}}', isDeleted: {{.IsDeleted}}}"
+                                class="{{if .IsDeleted}}text-green-600 hover:text-green-900{{else}}text-red-600 hover:text-red-900{{end}}">
+                                {{if .IsDeleted}}Restore{{else}}Delete{{end}}
+                            </button>
+                        </td>
+                    </tr>
+                    {{else}}
+                    <tr>
+                        <td colspan="6" class="px-6 py-4 text-center text-gray-500">No comments found</td>
+                    </tr>
+                    {{end}}
+                </tbody>
+            </table>
+        </div>
+
+        {{if gt .TotalPages 1}}
+        <div class="px-6 py-4 border-t border-gray-200 flex justify-between items-center">
+            <div class="text-sm text-gray-500">
+                Page {{.Page}} of {{.TotalPages}} ({{.TotalItems}} total)
+            </div>
+            <div class="flex gap-2">
+                {{if gt .Page 1}}
+                <a href="/admin/comments?page={{subtract .Page 1}}{{if .Search}}&search={{.Search}}{{end}}{{if .UserFilter}}&user={{.UserFilter}}{{end}}"
+                    class="px-3 py-1 border rounded text-sm hover:bg-gray-50">Previous</a>
+                {{end}}
+                {{if lt .Page .TotalPages}}
+                <a href="/admin/comments?page={{add .Page 1}}{{if .Search}}&search={{.Search}}{{end}}{{if .UserFilter}}&user={{.UserFilter}}{{end}}"
+                    class="px-3 py-1 border rounded text-sm hover:bg-gray-50">Next</a>
+                {{end}}
+            </div>
+        </div>
+        {{end}}
+    </div>
+
+    <div x-show="confirmDelete" x-cloak class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div class="bg-white rounded-lg shadow-xl p-6 max-w-md w-full mx-4">
+            <h3 class="text-lg font-medium text-gray-900 mb-4" x-text="confirmDelete?.isDeleted ? 'Restore Comment' : 'Delete Comment'"></h3>
+            <p class="text-gray-600 mb-6" x-text="confirmDelete?.isDeleted ? 'Are you sure you want to restore this comment?' : 'Are you sure you want to delete this comment?'"></p>
+            <div class="flex justify-end gap-3">
+                <button @click="confirmDelete = null" class="px-4 py-2 border rounded-md hover:bg-gray-50">Cancel</button>
+                <form method="POST" :action="'/admin/api/comments/' + confirmDelete?.id + '/delete'" class="inline">
+                    <button type="submit"
+                        class="px-4 py-2 text-white rounded-md"
+                        :class="confirmDelete?.isDeleted ? 'bg-green-600 hover:bg-green-700' : 'bg-red-600 hover:bg-red-700'"
+                        x-text="confirmDelete?.isDeleted ? 'Restore' : 'Delete'">
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div x-show="confirmSpoiler" x-cloak class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div class="bg-white rounded-lg shadow-xl p-6 max-w-md w-full mx-4">
+            <h3 class="text-lg font-medium text-gray-900 mb-4">Toggle Spoiler</h3>
+            <p class="text-gray-600 mb-6">Are you sure you want to toggle the spoiler flag on this comment?</p>
+            <div class="flex justify-end gap-3">
+                <button @click="confirmSpoiler = null" class="px-4 py-2 border rounded-md hover:bg-gray-50">Cancel</button>
+                <form method="POST" :action="'/admin/api/comments/' + confirmSpoiler + '/toggle-spoiler'" class="inline">
+                    <button type="submit" class="px-4 py-2 bg-yellow-600 text-white rounded-md hover:bg-yellow-700">Toggle Spoiler</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{{end}}
