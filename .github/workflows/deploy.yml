@@ -70,7 +70,7 @@ jobs:
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_SSH_KEY }}
           script: |
-            cd /opt/kpuppy
-            docker compose pull
-            docker compose up -d
+            cd /opt/vps-infra
+            docker compose --env-file .env -f compose/kpuppy.yml pull
+            docker compose --env-file .env -f compose/kpuppy.yml up -d
             docker image prune -f
