@@ -5,7 +5,8 @@ import "errors"
 var (
 	ErrUserNotFound       = errors.New("user not found")
 	ErrUserBanned         = errors.New("user is banned")
-	ErrUsernameEmpty      = errors.New("username cannot be empty")
+	ErrUserHashEmpty      = errors.New("user hash is required")
+	ErrInvalidUserHash    = errors.New("invalid user hash format")
 	ErrContentNotFound    = errors.New("content not found")
 	ErrCommentNotFound = errors.New("comment not found")
 	ErrCommentDeleted  = errors.New("comment has been deleted")

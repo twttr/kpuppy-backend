@@ -19,8 +19,8 @@ func (m *MockUserRepository) GetByID(ctx context.Context, id string) (*domain.Us
 	return args.Get(0).(*domain.User), args.Error(1)
 }
 
-func (m *MockUserRepository) GetByKinopubUsername(ctx context.Context, username string) (*domain.User, error) {
-	args := m.Called(ctx, username)
+func (m *MockUserRepository) GetByUserHash(ctx context.Context, userHash string) (*domain.User, error) {
+	args := m.Called(ctx, userHash)
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
 	}

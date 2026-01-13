@@ -8,7 +8,7 @@ import (
 
 type UserRepository interface {
 	GetByID(ctx context.Context, id string) (*domain.User, error)
-	GetByKinopubUsername(ctx context.Context, username string) (*domain.User, error)
+	GetByUserHash(ctx context.Context, userHash string) (*domain.User, error)
 	Create(ctx context.Context, user *domain.User) error
 	UpdateAvatar(ctx context.Context, id string, avatar *string) error
 	SetBanned(ctx context.Context, id string, banned bool) error

@@ -48,8 +48,8 @@ func setupCommentHandlerTest(t *testing.T) (*CommentHandler, *usecase.UserServic
 	return handler, userService, cleanup
 }
 
-func provisionUser(t *testing.T, userService *usecase.UserService, username string) *domain.User {
-	user, err := userService.Provision(context.Background(), &domain.ProvisionRequest{Username: username})
+func provisionUser(t *testing.T, userService *usecase.UserService, userHash string) *domain.User {
+	user, err := userService.Provision(context.Background(), &domain.ProvisionRequest{UserHash: userHash})
 	require.NoError(t, err)
 	return user
 }
@@ -98,7 +98,7 @@ func TestCommentHandler_CreateComment_Success(t *testing.T) {
 	handler, userService, cleanup := setupCommentHandlerTest(t)
 	defer cleanup()
 
-	user := provisionUser(t, userService, "testuser")
+	user := provisionUser(t, userService, "a7b3c2f1e8d9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f7a8b9c0d1e2f3a4b5")
 
 	e := echo.New()
 	reqBody := domain.CreateCommentRequest{
@@ -155,7 +155,7 @@ func TestCommentHandler_CreateComment_EmptyText(t *testing.T) {
 	handler, userService, cleanup := setupCommentHandlerTest(t)
 	defer cleanup()
 
-	user := provisionUser(t, userService, "testuser")
+	user := provisionUser(t, userService, "a7b3c2f1e8d9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f7a8b9c0d1e2f3a4b5")
 
 	e := echo.New()
 	reqBody := domain.CreateCommentRequest{
@@ -181,7 +181,7 @@ func TestCommentHandler_ReplyToComment_Success(t *testing.T) {
 	handler, userService, cleanup := setupCommentHandlerTest(t)
 	defer cleanup()
 
-	user := provisionUser(t, userService, "testuser")
+	user := provisionUser(t, userService, "a7b3c2f1e8d9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f7a8b9c0d1e2f3a4b5")
 
 	e := echo.New()
 
@@ -226,7 +226,7 @@ func TestCommentHandler_UpdateComment_Success(t *testing.T) {
 	handler, userService, cleanup := setupCommentHandlerTest(t)
 	defer cleanup()
 
-	user := provisionUser(t, userService, "testuser")
+	user := provisionUser(t, userService, "a7b3c2f1e8d9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f7a8b9c0d1e2f3a4b5")
 
 	e := echo.New()
 
@@ -272,8 +272,8 @@ func TestCommentHandler_UpdateComment_NotOwner(t *testing.T) {
 	handler, userService, cleanup := setupCommentHandlerTest(t)
 	defer cleanup()
 
-	user1 := provisionUser(t, userService, "user1")
-	user2 := provisionUser(t, userService, "user2")
+	user1 := provisionUser(t, userService, "a7b3c2f1e8d9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f7a8b9c0d1e2f3a4b5")
+	user2 := provisionUser(t, userService, "b7b3c2f1e8d9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f7a8b9c0d1e2f3a4b6")
 
 	e := echo.New()
 
@@ -313,7 +313,7 @@ func TestCommentHandler_DeleteComment_Success(t *testing.T) {
 	handler, userService, cleanup := setupCommentHandlerTest(t)
 	defer cleanup()
 
-	user := provisionUser(t, userService, "testuser")
+	user := provisionUser(t, userService, "a7b3c2f1e8d9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f7a8b9c0d1e2f3a4b5")
 
 	e := echo.New()
 
@@ -350,8 +350,8 @@ func TestCommentHandler_DeleteComment_NotOwner(t *testing.T) {
 	handler, userService, cleanup := setupCommentHandlerTest(t)
 	defer cleanup()
 
-	user1 := provisionUser(t, userService, "user1")
-	user2 := provisionUser(t, userService, "user2")
+	user1 := provisionUser(t, userService, "a7b3c2f1e8d9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f7a8b9c0d1e2f3a4b5")
+	user2 := provisionUser(t, userService, "b7b3c2f1e8d9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f7a8b9c0d1e2f3a4b6")
 
 	e := echo.New()
 
@@ -388,7 +388,7 @@ func TestCommentHandler_GetComments_ReturnsAllComments(t *testing.T) {
 	handler, userService, cleanup := setupCommentHandlerTest(t)
 	defer cleanup()
 
-	user := provisionUser(t, userService, "testuser")
+	user := provisionUser(t, userService, "a7b3c2f1e8d9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f7a8b9c0d1e2f3a4b5")
 
 	e := echo.New()
 
@@ -425,7 +425,7 @@ func TestCommentHandler_CreateComment_BannedUser(t *testing.T) {
 	defer cleanup()
 
 	ctx := context.Background()
-	user := provisionUser(t, userService, "testuser")
+	user := provisionUser(t, userService, "a7b3c2f1e8d9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f7a8b9c0d1e2f3a4b5")
 	userService.SetBanned(ctx, user.ID, true)
 
 	e := echo.New()
@@ -472,7 +472,7 @@ func TestCommentHandler_CreateComment_CommentTooLong(t *testing.T) {
 	handler, userService, cleanup := setupCommentHandlerTest(t)
 	defer cleanup()
 
-	user := provisionUser(t, userService, "testuser")
+	user := provisionUser(t, userService, "a7b3c2f1e8d9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f7a8b9c0d1e2f3a4b5")
 
 	e := echo.New()
 	longText := make([]byte, 1001)
@@ -521,7 +521,7 @@ func TestCommentHandler_ReplyToComment_ParentNotFound(t *testing.T) {
 	handler, userService, cleanup := setupCommentHandlerTest(t)
 	defer cleanup()
 
-	user := provisionUser(t, userService, "testuser")
+	user := provisionUser(t, userService, "a7b3c2f1e8d9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f7a8b9c0d1e2f3a4b5")
 
 	e := echo.New()
 	reqBody := domain.CreateCommentRequest{Text: "reply"}
@@ -545,7 +545,7 @@ func TestCommentHandler_ReplyToComment_NestedReplies(t *testing.T) {
 	handler, userService, cleanup := setupCommentHandlerTest(t)
 	defer cleanup()
 
-	user := provisionUser(t, userService, "testuser")
+	user := provisionUser(t, userService, "a7b3c2f1e8d9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f7a8b9c0d1e2f3a4b5")
 
 	e := echo.New()
 
@@ -622,7 +622,7 @@ func TestCommentHandler_UpdateComment_NotFound(t *testing.T) {
 	handler, userService, cleanup := setupCommentHandlerTest(t)
 	defer cleanup()
 
-	user := provisionUser(t, userService, "testuser")
+	user := provisionUser(t, userService, "a7b3c2f1e8d9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f7a8b9c0d1e2f3a4b5")
 
 	e := echo.New()
 	reqBody := domain.UpdateCommentRequest{Text: "updated"}
@@ -664,7 +664,7 @@ func TestCommentHandler_DeleteComment_NotFound(t *testing.T) {
 	handler, userService, cleanup := setupCommentHandlerTest(t)
 	defer cleanup()
 
-	user := provisionUser(t, userService, "testuser")
+	user := provisionUser(t, userService, "a7b3c2f1e8d9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f7a8b9c0d1e2f3a4b5")
 
 	e := echo.New()
 
@@ -685,7 +685,7 @@ func TestCommentHandler_DeleteComment_AlreadyDeleted(t *testing.T) {
 	handler, userService, cleanup := setupCommentHandlerTest(t)
 	defer cleanup()
 
-	user := provisionUser(t, userService, "testuser")
+	user := provisionUser(t, userService, "a7b3c2f1e8d9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f7a8b9c0d1e2f3a4b5")
 
 	e := echo.New()
 

@@ -49,8 +49,8 @@ func TestAdminHandler_ListUsers(t *testing.T) {
 	defer cleanup()
 
 	ctx := context.Background()
-	userService.Provision(ctx, &domain.ProvisionRequest{Username: "user1"})
-	userService.Provision(ctx, &domain.ProvisionRequest{Username: "user2"})
+	userService.Provision(ctx, &domain.ProvisionRequest{UserHash: "a7b3c2f1e8d9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f7a8b9c0d1e2f3a4b5"})
+	userService.Provision(ctx, &domain.ProvisionRequest{UserHash: "b7b3c2f1e8d9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f7a8b9c0d1e2f3a4b6"})
 
 	e := echo.New()
 	req := httptest.NewRequest(http.MethodGet, "/admin/api/users?page=1", nil)
@@ -89,7 +89,7 @@ func TestAdminHandler_BanUser_Success(t *testing.T) {
 	defer cleanup()
 
 	ctx := context.Background()
-	user, _ := userService.Provision(ctx, &domain.ProvisionRequest{Username: "testuser"})
+	user, _ := userService.Provision(ctx, &domain.ProvisionRequest{UserHash: "a7b3c2f1e8d9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f7a8b9c0d1e2f3a4b5"})
 
 	e := echo.New()
 	req := httptest.NewRequest(http.MethodPost, "/admin/api/users/"+user.ID+"/ban", nil)
@@ -130,7 +130,7 @@ func TestAdminHandler_UnbanUser_Success(t *testing.T) {
 	defer cleanup()
 
 	ctx := context.Background()
-	user, _ := userService.Provision(ctx, &domain.ProvisionRequest{Username: "testuser"})
+	user, _ := userService.Provision(ctx, &domain.ProvisionRequest{UserHash: "a7b3c2f1e8d9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f7a8b9c0d1e2f3a4b5"})
 	userService.SetBanned(ctx, user.ID, true)
 
 	e := echo.New()
@@ -172,7 +172,7 @@ func TestAdminHandler_ListComments(t *testing.T) {
 	defer cleanup()
 
 	ctx := context.Background()
-	user, _ := userService.Provision(ctx, &domain.ProvisionRequest{Username: "testuser"})
+	user, _ := userService.Provision(ctx, &domain.ProvisionRequest{UserHash: "a7b3c2f1e8d9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f7a8b9c0d1e2f3a4b5"})
 
 	commentService.CreateComment(ctx, 12345, user.ID, &domain.CreateCommentRequest{Text: "comment 1"})
 	commentService.CreateComment(ctx, 12345, user.ID, &domain.CreateCommentRequest{Text: "comment 2"})
@@ -199,7 +199,7 @@ func TestAdminHandler_ListComments_ShowsDeleted(t *testing.T) {
 	defer cleanup()
 
 	ctx := context.Background()
-	user, _ := userService.Provision(ctx, &domain.ProvisionRequest{Username: "testuser"})
+	user, _ := userService.Provision(ctx, &domain.ProvisionRequest{UserHash: "a7b3c2f1e8d9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f7a8b9c0d1e2f3a4b5"})
 
 	comment, _ := commentService.CreateComment(ctx, 12345, user.ID, &domain.CreateCommentRequest{Text: "to delete"})
 	commentService.AdminDelete(ctx, comment.ID)
@@ -226,7 +226,7 @@ func TestAdminHandler_DeleteComment_Success(t *testing.T) {
 	defer cleanup()
 
 	ctx := context.Background()
-	user, _ := userService.Provision(ctx, &domain.ProvisionRequest{Username: "testuser"})
+	user, _ := userService.Provision(ctx, &domain.ProvisionRequest{UserHash: "a7b3c2f1e8d9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f7a8b9c0d1e2f3a4b5"})
 	comment, _ := commentService.CreateComment(ctx, 12345, user.ID, &domain.CreateCommentRequest{Text: "test"})
 
 	e := echo.New()

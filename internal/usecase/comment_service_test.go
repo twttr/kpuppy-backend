@@ -64,7 +64,7 @@ func TestCommentService_CreateComment_Success(t *testing.T) {
 
 	user := &domain.User{
 		ID:              "user-id",
-		KinopubUsername: "testuser",
+		DisplayName: "testuser",
 		IsBanned:        false,
 	}
 

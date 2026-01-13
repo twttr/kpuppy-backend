@@ -38,9 +38,10 @@ func TestCommentRepository_CreateAndGet(t *testing.T) {
 	ctx := context.Background()
 
 	user := &domain.User{
-		ID:              "user-123",
-		KinopubUsername: "testuser",
-		CreatedAt:       time.Now(),
+		ID:          "user-123",
+		UserHash:    "a7b3c2f1e8d9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f7a8b9c0d1e2f3a4b5",
+		DisplayName: "testuser",
+		CreatedAt:   time.Now(),
 	}
 	err := userRepo.Create(ctx, user)
 	require.NoError(t, err)
@@ -74,7 +75,7 @@ func TestCommentRepository_CreateAndGet(t *testing.T) {
 	assert.Equal(t, comment.Text, retrieved.Text)
 	assert.True(t, retrieved.Spoiler)
 	assert.NotNil(t, retrieved.User)
-	assert.Equal(t, "testuser", retrieved.User.KinopubUsername)
+	assert.Equal(t, "testuser", retrieved.User.DisplayName)
 }
 
 func TestCommentRepository_GetByContentID(t *testing.T) {
@@ -84,9 +85,10 @@ func TestCommentRepository_GetByContentID(t *testing.T) {
 	ctx := context.Background()
 
 	user := &domain.User{
-		ID:              "user-123",
-		KinopubUsername: "testuser",
-		CreatedAt:       time.Now(),
+		ID:          "user-123",
+		UserHash:    "a7b3c2f1e8d9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f7a8b9c0d1e2f3a4b5",
+		DisplayName: "testuser",
+		CreatedAt:   time.Now(),
 	}
 	err := userRepo.Create(ctx, user)
 	require.NoError(t, err)
@@ -124,9 +126,10 @@ func TestCommentRepository_Replies(t *testing.T) {
 	ctx := context.Background()
 
 	user := &domain.User{
-		ID:              "user-123",
-		KinopubUsername: "testuser",
-		CreatedAt:       time.Now(),
+		ID:          "user-123",
+		UserHash:    "a7b3c2f1e8d9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f7a8b9c0d1e2f3a4b5",
+		DisplayName: "testuser",
+		CreatedAt:   time.Now(),
 	}
 	err := userRepo.Create(ctx, user)
 	require.NoError(t, err)
@@ -175,9 +178,10 @@ func TestCommentRepository_SoftDelete(t *testing.T) {
 	ctx := context.Background()
 
 	user := &domain.User{
-		ID:              "user-123",
-		KinopubUsername: "testuser",
-		CreatedAt:       time.Now(),
+		ID:          "user-123",
+		UserHash:    "a7b3c2f1e8d9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f7a8b9c0d1e2f3a4b5",
+		DisplayName: "testuser",
+		CreatedAt:   time.Now(),
 	}
 	err := userRepo.Create(ctx, user)
 	require.NoError(t, err)
@@ -215,9 +219,10 @@ func TestCommentRepository_Update(t *testing.T) {
 	ctx := context.Background()
 
 	user := &domain.User{
-		ID:              "user-123",
-		KinopubUsername: "testuser",
-		CreatedAt:       time.Now(),
+		ID:          "user-123",
+		UserHash:    "a7b3c2f1e8d9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f7a8b9c0d1e2f3a4b5",
+		DisplayName: "testuser",
+		CreatedAt:   time.Now(),
 	}
 	err := userRepo.Create(ctx, user)
 	require.NoError(t, err)
@@ -264,9 +269,10 @@ func TestCommentRepository_List(t *testing.T) {
 	ctx := context.Background()
 
 	user := &domain.User{
-		ID:              "user-123",
-		KinopubUsername: "testuser",
-		CreatedAt:       time.Now(),
+		ID:          "user-123",
+		UserHash:    "a7b3c2f1e8d9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f7a8b9c0d1e2f3a4b5",
+		DisplayName: "testuser",
+		CreatedAt:   time.Now(),
 	}
 	err := userRepo.Create(ctx, user)
 	require.NoError(t, err)
@@ -305,9 +311,10 @@ func TestCommentRepository_List_IncludeDeleted(t *testing.T) {
 	ctx := context.Background()
 
 	user := &domain.User{
-		ID:              "user-123",
-		KinopubUsername: "testuser",
-		CreatedAt:       time.Now(),
+		ID:          "user-123",
+		UserHash:    "a7b3c2f1e8d9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f7a8b9c0d1e2f3a4b5",
+		DisplayName: "testuser",
+		CreatedAt:   time.Now(),
 	}
 	err := userRepo.Create(ctx, user)
 	require.NoError(t, err)

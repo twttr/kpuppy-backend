@@ -22,7 +22,7 @@ func (s *UserService) Provision(ctx context.Context, req *domain.ProvisionReques
 		return nil, err
 	}
 
-	existing, err := s.userRepo.GetByKinopubUsername(ctx, req.Username)
+	existing, err := s.userRepo.GetByUserHash(ctx, req.UserHash)
 	if err == nil {
 		if req.Avatar != nil && (existing.Avatar == nil || *existing.Avatar != *req.Avatar) {
 			_ = s.userRepo.UpdateAvatar(ctx, existing.ID, req.Avatar)
@@ -34,12 +34,15 @@ func (s *UserService) Provision(ctx context.Context, req *domain.ProvisionReques
 		return nil, err
 	}
 
+	displayName := domain.GeneratePseudonym(req.UserHash)
+
 	user := &domain.User{
-		ID:              uuid.New().String(),
-		KinopubUsername: req.Username,
-		Avatar:          req.Avatar,
-		IsBanned:        false,
-		CreatedAt:       time.Now(),
+		ID:          uuid.New().String(),
+		UserHash:    req.UserHash,
+		DisplayName: displayName,
+		Avatar:      req.Avatar,
+		IsBanned:    false,
+		CreatedAt:   time.Now(),
 	}
 
 	if err := s.userRepo.Create(ctx, user); err != nil {

@@ -97,7 +97,7 @@ func (h *AdminWebHandler) Dashboard(c echo.Context) error {
 		if co.User != nil {
 			userView = UserView{
 				ID:       co.User.ID,
-				Username: co.User.KinopubUsername,
+				Username: co.User.DisplayName,
 				Avatar:   co.User.Avatar,
 			}
 		}
@@ -145,12 +145,12 @@ func (h *AdminWebHandler) Comments(c echo.Context) error {
 		}
 		var userView UserView
 		if co.User != nil {
-			if userFilter != "" && !containsIgnoreCase(co.User.KinopubUsername, userFilter) {
+			if userFilter != "" && !containsIgnoreCase(co.User.DisplayName, userFilter) {
 				continue
 			}
 			userView = UserView{
 				ID:       co.User.ID,
-				Username: co.User.KinopubUsername,
+				Username: co.User.DisplayName,
 				Avatar:   co.User.Avatar,
 			}
 		} else if userFilter != "" {
@@ -196,7 +196,7 @@ func (h *AdminWebHandler) Users(c echo.Context) error {
 	for _, u := range users {
 		userViews = append(userViews, UserView{
 			ID:                 u.ID,
-			Username:           u.KinopubUsername,
+			Username:           u.DisplayName,
 			Avatar:             u.Avatar,
 			IsBanned:           u.IsBanned,
 			CreatedAtFormatted: u.CreatedAt.Format("Jan 2, 2006 15:04"),

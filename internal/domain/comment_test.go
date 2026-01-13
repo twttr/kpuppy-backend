@@ -55,7 +55,7 @@ func TestComment_ToResponse(t *testing.T) {
 
 	user := &User{
 		ID:              "user-123",
-		KinopubUsername: "testuser",
+		DisplayName: "testuser",
 		Avatar:          strPtr("https://example.com/avatar.jpg"),
 	}
 
@@ -78,7 +78,7 @@ func TestComment_ToResponse(t *testing.T) {
 	assert.Equal(t, "comment-123", resp.ID)
 	assert.Equal(t, "content-456", resp.ContentID)
 	assert.Equal(t, "user-123", resp.UserID)
-	assert.Equal(t, "testuser", resp.User.Username)
+	assert.Equal(t, "testuser", resp.User.DisplayName)
 	assert.Equal(t, "Test comment", resp.Text)
 	assert.True(t, resp.Spoiler)
 	assert.Nil(t, resp.ParentID)
@@ -93,7 +93,7 @@ func TestComment_ToResponse_Deleted(t *testing.T) {
 
 	user := &User{
 		ID:              "user-123",
-		KinopubUsername: "testuser",
+		DisplayName: "testuser",
 	}
 
 	comment := &Comment{
@@ -165,7 +165,7 @@ func TestComment_ToResponse_WithReplies(t *testing.T) {
 		ID:        "parent-123",
 		ContentID: "content-456",
 		UserID:    "user-123",
-		User:      &User{ID: "user-123", KinopubUsername: "parent_user"},
+		User:      &User{ID: "user-123", DisplayName: "parent_user"},
 		Text:      "Parent comment",
 		CreatedAt: now,
 		Replies: []Comment{
@@ -173,7 +173,7 @@ func TestComment_ToResponse_WithReplies(t *testing.T) {
 				ID:        "reply-1",
 				ContentID: "content-456",
 				UserID:    "user-456",
-				User:      &User{ID: "user-456", KinopubUsername: "reply_user"},
+				User:      &User{ID: "user-456", DisplayName: "reply_user"},
 				Text:      "Reply 1",
 				ParentID:  &parentID,
 				CreatedAt: now,
@@ -212,7 +212,7 @@ func TestComment_ToResponse_NoEditedAt(t *testing.T) {
 		ID:        "comment-123",
 		ContentID: "content-456",
 		UserID:    "user-123",
-		User:      &User{ID: "user-123", KinopubUsername: "testuser"},
+		User:      &User{ID: "user-123", DisplayName: "testuser"},
 		Text:      "Test comment",
 		EditedAt:  nil,
 		CreatedAt: now,

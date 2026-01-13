@@ -20,7 +20,7 @@ func (r *CommentRepository) GetByID(ctx context.Context, id string) (*domain.Com
 	row := r.db.QueryRowContext(ctx, `
 		SELECT c.id, c.content_id, c.user_id, c.text, c.spoiler, c.parent_id,
 		       c.edited_at, c.deleted_at, c.created_at,
-		       u.id, u.kinopub_username, u.avatar, u.is_banned, u.created_at
+		       u.id, u.user_hash, u.display_name, u.avatar, u.is_banned, u.created_at
 		FROM comments c
 		JOIN users u ON c.user_id = u.id
 		WHERE c.id = ?
@@ -33,7 +33,7 @@ func (r *CommentRepository) GetByContentID(ctx context.Context, contentID string
 	rows, err := r.db.QueryContext(ctx, `
 		SELECT c.id, c.content_id, c.user_id, c.text, c.spoiler, c.parent_id,
 		       c.edited_at, c.deleted_at, c.created_at,
-		       u.id, u.kinopub_username, u.avatar, u.is_banned, u.created_at
+		       u.id, u.user_hash, u.display_name, u.avatar, u.is_banned, u.created_at
 		FROM comments c
 		JOIN users u ON c.user_id = u.id
 		WHERE c.content_id = ? AND c.parent_id IS NULL
@@ -73,7 +73,7 @@ func (r *CommentRepository) GetReplies(ctx context.Context, parentID string) ([]
 	rows, err := r.db.QueryContext(ctx, `
 		SELECT c.id, c.content_id, c.user_id, c.text, c.spoiler, c.parent_id,
 		       c.edited_at, c.deleted_at, c.created_at,
-		       u.id, u.kinopub_username, u.avatar, u.is_banned, u.created_at
+		       u.id, u.user_hash, u.display_name, u.avatar, u.is_banned, u.created_at
 		FROM comments c
 		JOIN users u ON c.user_id = u.id
 		WHERE c.parent_id = ?
@@ -152,7 +152,7 @@ func (r *CommentRepository) List(ctx context.Context, offset, limit int, include
 		selectQuery = `
 			SELECT c.id, c.content_id, c.user_id, c.text, c.spoiler, c.parent_id,
 			       c.edited_at, c.deleted_at, c.created_at,
-			       u.id, u.kinopub_username, u.avatar, u.is_banned, u.created_at,
+			       u.id, u.user_hash, u.display_name, u.avatar, u.is_banned, u.created_at,
 			       ct.kinopub_item_id
 			FROM comments c
 			JOIN users u ON c.user_id = u.id
@@ -165,7 +165,7 @@ func (r *CommentRepository) List(ctx context.Context, offset, limit int, include
 		selectQuery = `
 			SELECT c.id, c.content_id, c.user_id, c.text, c.spoiler, c.parent_id,
 			       c.edited_at, c.deleted_at, c.created_at,
-			       u.id, u.kinopub_username, u.avatar, u.is_banned, u.created_at,
+			       u.id, u.user_hash, u.display_name, u.avatar, u.is_banned, u.created_at,
 			       ct.kinopub_item_id
 			FROM comments c
 			JOIN users u ON c.user_id = u.id
@@ -201,7 +201,7 @@ func (r *CommentRepository) List(ctx context.Context, offset, limit int, include
 		err := rows.Scan(
 			&comment.ID, &comment.ContentID, &comment.UserID, &comment.Text,
 			&comment.Spoiler, &parentID, &editedAt, &deletedAt, &createdAt,
-			&user.ID, &user.KinopubUsername, &avatar, &isBanned, &userCreatedAt,
+			&user.ID, &user.UserHash, &user.DisplayName, &avatar, &isBanned, &userCreatedAt,
 			&comment.KinopubItemID,
 		)
 		if err != nil {
@@ -248,7 +248,7 @@ func (r *CommentRepository) scanCommentWithUser(row *sql.Row) (*domain.Comment, 
 	err := row.Scan(
 		&comment.ID, &comment.ContentID, &comment.UserID, &comment.Text, &comment.Spoiler, &parentID,
 		&editedAt, &deletedAt, &createdAt,
-		&user.ID, &user.KinopubUsername, &avatar, &isBanned, &userCreatedAt,
+		&user.ID, &user.UserHash, &user.DisplayName, &avatar, &isBanned, &userCreatedAt,
 	)
 	if err == sql.ErrNoRows {
 		return nil, domain.ErrCommentNotFound
@@ -293,7 +293,7 @@ func (r *CommentRepository) scanCommentWithUserFromRows(rows *sql.Rows) (*domain
 	err := rows.Scan(
 		&comment.ID, &comment.ContentID, &comment.UserID, &comment.Text, &comment.Spoiler, &parentID,
 		&editedAt, &deletedAt, &createdAt,
-		&user.ID, &user.KinopubUsername, &avatar, &isBanned, &userCreatedAt,
+		&user.ID, &user.UserHash, &user.DisplayName, &avatar, &isBanned, &userCreatedAt,
 	)
 	if err != nil {
 		return nil, err

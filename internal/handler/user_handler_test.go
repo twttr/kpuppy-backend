@@ -16,6 +16,8 @@ import (
 	"github.com/twttr/kpuppy-backend/internal/usecase"
 )
 
+const validHash = "a7b3c2f1e8d9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f7a8b9c0d1e2f3a4b5"
+
 func setupUserHandlerTest(t *testing.T) (*UserHandler, func()) {
 	tmpFile, err := os.CreateTemp("", "test_handler_*.db")
 	require.NoError(t, err)
@@ -46,7 +48,7 @@ func TestUserHandler_Provision_NewUser(t *testing.T) {
 	e := echo.New()
 
 	reqBody := domain.ProvisionRequest{
-		Username: "newuser",
+		UserHash: validHash,
 		Avatar:   strPtr("https://example.com/avatar.jpg"),
 	}
 	body, _ := json.Marshal(reqBody)
@@ -66,6 +68,33 @@ func TestUserHandler_Provision_NewUser(t *testing.T) {
 	require.NoError(t, err)
 
 	assert.NotEmpty(t, resp.UserID)
+	assert.NotEmpty(t, resp.DisplayName)
+}
+
+func TestUserHandler_Provision_NewUser_DisplayNameReturned(t *testing.T) {
+	handler, cleanup := setupUserHandlerTest(t)
+	defer cleanup()
+
+	e := echo.New()
+
+	reqBody := domain.ProvisionRequest{
+		UserHash: validHash,
+	}
+	body, _ := json.Marshal(reqBody)
+
+	req := httptest.NewRequest(http.MethodPost, "/users/provision", bytes.NewReader(body))
+	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+	rec := httptest.NewRecorder()
+	c := e.NewContext(req, rec)
+
+	err := handler.Provision(c)
+	require.NoError(t, err)
+
+	var resp domain.ProvisionResponse
+	json.Unmarshal(rec.Body.Bytes(), &resp)
+
+	expectedDisplayName := domain.GeneratePseudonym(validHash)
+	assert.Equal(t, expectedDisplayName, resp.DisplayName)
 }
 
 func TestUserHandler_Provision_ExistingUser(t *testing.T) {
@@ -75,7 +104,7 @@ func TestUserHandler_Provision_ExistingUser(t *testing.T) {
 	e := echo.New()
 
 	reqBody := domain.ProvisionRequest{
-		Username: "existinguser",
+		UserHash: validHash,
 	}
 	body, _ := json.Marshal(reqBody)
 
@@ -100,16 +129,17 @@ func TestUserHandler_Provision_ExistingUser(t *testing.T) {
 	json.Unmarshal(rec2.Body.Bytes(), &resp2)
 
 	assert.Equal(t, resp1.UserID, resp2.UserID)
+	assert.Equal(t, resp1.DisplayName, resp2.DisplayName)
 }
 
-func TestUserHandler_Provision_EmptyUsername(t *testing.T) {
+func TestUserHandler_Provision_EmptyHash(t *testing.T) {
 	handler, cleanup := setupUserHandlerTest(t)
 	defer cleanup()
 
 	e := echo.New()
 
 	reqBody := domain.ProvisionRequest{
-		Username: "",
+		UserHash: "",
 	}
 	body, _ := json.Marshal(reqBody)
 
@@ -122,6 +152,36 @@ func TestUserHandler_Provision_EmptyUsername(t *testing.T) {
 	require.NoError(t, err)
 
 	assert.Equal(t, http.StatusBadRequest, rec.Code)
+
+	var apiErr domain.APIError
+	json.Unmarshal(rec.Body.Bytes(), &apiErr)
+	assert.Equal(t, domain.ErrUserHashEmpty.Error(), apiErr.Error)
+}
+
+func TestUserHandler_Provision_InvalidHashLength(t *testing.T) {
+	handler, cleanup := setupUserHandlerTest(t)
+	defer cleanup()
+
+	e := echo.New()
+
+	reqBody := domain.ProvisionRequest{
+		UserHash: "tooshort",
+	}
+	body, _ := json.Marshal(reqBody)
+
+	req := httptest.NewRequest(http.MethodPost, "/users/provision", bytes.NewReader(body))
+	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+	rec := httptest.NewRecorder()
+	c := e.NewContext(req, rec)
+
+	err := handler.Provision(c)
+	require.NoError(t, err)
+
+	assert.Equal(t, http.StatusBadRequest, rec.Code)
+
+	var apiErr domain.APIError
+	json.Unmarshal(rec.Body.Bytes(), &apiErr)
+	assert.Equal(t, domain.ErrInvalidUserHash.Error(), apiErr.Error)
 }
 
 func TestUserHandler_Provision_InvalidJSON(t *testing.T) {

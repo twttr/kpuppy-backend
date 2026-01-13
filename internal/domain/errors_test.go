@@ -35,7 +35,8 @@ func TestErrorCodes(t *testing.T) {
 func TestDomainErrors(t *testing.T) {
 	assert.NotNil(t, ErrUserNotFound)
 	assert.NotNil(t, ErrUserBanned)
-	assert.NotNil(t, ErrUsernameEmpty)
+	assert.NotNil(t, ErrUserHashEmpty)
+	assert.NotNil(t, ErrInvalidUserHash)
 	assert.NotNil(t, ErrContentNotFound)
 	assert.NotNil(t, ErrCommentNotFound)
 	assert.NotNil(t, ErrCommentDeleted)

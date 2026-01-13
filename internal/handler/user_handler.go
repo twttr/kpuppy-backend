@@ -27,5 +27,5 @@ func (h *UserHandler) Provision(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, domain.NewAPIError(err, domain.CodeValidationError))
 	}
 
-	return c.JSON(http.StatusOK, domain.ProvisionResponse{UserID: user.ID})
+	return c.JSON(http.StatusOK, domain.ProvisionResponse{UserID: user.ID, DisplayName: user.DisplayName})
 }
