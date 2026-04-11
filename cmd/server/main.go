@@ -65,6 +65,7 @@ func main() {
 
 	hub := websocket.NewHub()
 	go hub.Run()
+	defer hub.Stop() // Fix #1: stop hub goroutine on shutdown
 
 	e := echo.New()
 	e.HideBanner = true
@@ -86,7 +87,7 @@ func main() {
 
 	userHandler := handler.NewUserHandler(userService)
 	commentHandler := handler.NewCommentHandler(commentService, hub)
-	wsHandler := handler.NewWSHandler(hub)
+	wsHandler := handler.NewWSHandler(hub, cfg.Server.AllowedOrigins) // Fix #4: pass allowed origins
 
 	e.POST("/users/provision", userHandler.Provision)
 

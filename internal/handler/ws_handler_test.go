@@ -15,7 +15,7 @@ import (
 
 func TestNewWSHandler(t *testing.T) {
 	hub := ws.NewHub()
-	handler := NewWSHandler(hub)
+	handler := NewWSHandler(hub, nil)
 
 	assert.NotNil(t, handler)
 	assert.Equal(t, hub, handler.hub)
@@ -23,7 +23,7 @@ func TestNewWSHandler(t *testing.T) {
 
 func TestWSHandler_HandleWebSocket_MissingRoomID(t *testing.T) {
 	hub := ws.NewHub()
-	handler := NewWSHandler(hub)
+	handler := NewWSHandler(hub, nil)
 
 	e := echo.New()
 	req := httptest.NewRequest(http.MethodGet, "/ws/content/", nil)
@@ -41,7 +41,9 @@ func TestWSHandler_HandleWebSocket_MissingRoomID(t *testing.T) {
 func TestWSHandler_HandleWebSocket_Success(t *testing.T) {
 	hub := ws.NewHub()
 	go hub.Run()
-	handler := NewWSHandler(hub)
+	// Pass empty allowed origins — CheckOrigin falls back to same-origin (Origin == Host)
+	// In tests, no Origin header is sent by the default dialer, so it passes.
+	handler := NewWSHandler(hub, nil)
 
 	e := echo.New()
 	e.GET("/ws/content/:kinopubItemId", handler.HandleWebSocket)
@@ -59,7 +61,7 @@ func TestWSHandler_HandleWebSocket_Success(t *testing.T) {
 
 func TestWSHandler_HandleWebSocket_UpgradeFailure(t *testing.T) {
 	hub := ws.NewHub()
-	handler := NewWSHandler(hub)
+	handler := NewWSHandler(hub, nil)
 
 	e := echo.New()
 	req := httptest.NewRequest(http.MethodGet, "/ws/content/123", nil)
