@@ -8,8 +8,12 @@ import (
 	"github.com/twttr/kpuppy-backend/internal/domain"
 )
 
-// userIDContextKey is the echo context key for the authenticated user ID.
-const userIDContextKey = "authenticated_user_id"
+// UserIDContextKey is the echo context key for the authenticated user ID.
+// Exported so tests can set it directly without going through middleware.
+const UserIDContextKey = "authenticated_user_id"
+
+// userIDContextKey is the internal alias used within this package.
+const userIDContextKey = UserIDContextKey
 
 // UserResolver is implemented by the user service.
 type UserResolver interface {
@@ -46,7 +50,7 @@ func UserAuth(resolver UserResolver) echo.MiddlewareFunc {
 			}
 
 			// Store verified user ID in context — handlers must use GetUserID(), not the header.
-			c.Set(userIDContextKey, user.ID)
+			c.Set(UserIDContextKey, user.ID)
 			return next(c)
 		}
 	}
@@ -55,7 +59,7 @@ func UserAuth(resolver UserResolver) echo.MiddlewareFunc {
 // GetUserID retrieves the authenticated user ID set by UserAuth middleware.
 // Returns ("", false) if called outside of authenticated context.
 func GetUserID(c echo.Context) (string, bool) {
-	val := c.Get(userIDContextKey)
+	val := c.Get(UserIDContextKey)
 	if val == nil {
 		return "", false
 	}
