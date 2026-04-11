@@ -56,6 +56,10 @@ func (s *UserService) GetByID(ctx context.Context, id string) (*domain.User, err
 	return s.userRepo.GetByID(ctx, id)
 }
 
+func (s *UserService) GetByUserHash(ctx context.Context, userHash string) (*domain.User, error) {
+	return s.userRepo.GetByUserHash(ctx, userHash)
+}
+
 func (s *UserService) List(ctx context.Context, page, perPage int) ([]domain.User, int, error) {
 	offset := (page - 1) * perPage
 	return s.userRepo.List(ctx, offset, perPage)

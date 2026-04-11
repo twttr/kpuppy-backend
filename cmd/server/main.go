@@ -92,10 +92,13 @@ func main() {
 	e.POST("/users/provision", userHandler.Provision)
 
 	e.GET("/content/:kinopubItemId/comments", commentHandler.GetComments)
-	e.POST("/content/:kinopubItemId/comments", commentHandler.CreateComment)
-	e.POST("/comments/:commentId/reply", commentHandler.ReplyToComment)
-	e.PATCH("/comments/:commentId", commentHandler.UpdateComment)
-	e.DELETE("/comments/:commentId", commentHandler.DeleteComment)
+
+	// Fix #7: routes that mutate data require verified user identity via X-User-Hash
+	userAuthMiddleware := custommw.UserAuth(userService)
+	e.POST("/content/:kinopubItemId/comments", commentHandler.CreateComment, userAuthMiddleware)
+	e.POST("/comments/:commentId/reply", commentHandler.ReplyToComment, userAuthMiddleware)
+	e.PATCH("/comments/:commentId", commentHandler.UpdateComment, userAuthMiddleware)
+	e.DELETE("/comments/:commentId", commentHandler.DeleteComment, userAuthMiddleware)
 
 	e.GET("/ws/content/:kinopubItemId", wsHandler.HandleWebSocket)
 

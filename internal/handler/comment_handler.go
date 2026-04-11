@@ -7,6 +7,7 @@ import (
 
 	"github.com/labstack/echo/v4"
 	"github.com/twttr/kpuppy-backend/internal/domain"
+	custommw "github.com/twttr/kpuppy-backend/internal/middleware"
 	"github.com/twttr/kpuppy-backend/internal/usecase"
 	"github.com/twttr/kpuppy-backend/internal/websocket"
 )
@@ -43,8 +44,9 @@ func (h *CommentHandler) CreateComment(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, domain.NewAPIError(err, domain.CodeValidationError))
 	}
 
-	userID := c.Request().Header.Get("X-User-ID")
-	if userID == "" {
+	// Fix #7: user ID comes from middleware (verified via X-User-Hash), not client header
+	userID, ok := custommw.GetUserID(c)
+	if !ok {
 		return c.JSON(http.StatusUnauthorized, domain.NewAPIError(domain.ErrUserNotProvisioned, domain.CodeUserNotProvisioned))
 	}
 
@@ -71,8 +73,9 @@ func (h *CommentHandler) CreateComment(c echo.Context) error {
 func (h *CommentHandler) ReplyToComment(c echo.Context) error {
 	commentID := c.Param("commentId")
 
-	userID := c.Request().Header.Get("X-User-ID")
-	if userID == "" {
+	// Fix #7: user ID comes from middleware (verified via X-User-Hash), not client header
+	userID, ok := custommw.GetUserID(c)
+	if !ok {
 		return c.JSON(http.StatusUnauthorized, domain.NewAPIError(domain.ErrUserNotProvisioned, domain.CodeUserNotProvisioned))
 	}
 
@@ -105,8 +108,9 @@ func (h *CommentHandler) ReplyToComment(c echo.Context) error {
 func (h *CommentHandler) UpdateComment(c echo.Context) error {
 	commentID := c.Param("commentId")
 
-	userID := c.Request().Header.Get("X-User-ID")
-	if userID == "" {
+	// Fix #7: user ID comes from middleware (verified via X-User-Hash), not client header
+	userID, ok := custommw.GetUserID(c)
+	if !ok {
 		return c.JSON(http.StatusUnauthorized, domain.NewAPIError(domain.ErrUserNotProvisioned, domain.CodeUserNotProvisioned))
 	}
 
@@ -136,8 +140,9 @@ func (h *CommentHandler) UpdateComment(c echo.Context) error {
 func (h *CommentHandler) DeleteComment(c echo.Context) error {
 	commentID := c.Param("commentId")
 
-	userID := c.Request().Header.Get("X-User-ID")
-	if userID == "" {
+	// Fix #7: user ID comes from middleware (verified via X-User-Hash), not client header
+	userID, ok := custommw.GetUserID(c)
+	if !ok {
 		return c.JSON(http.StatusUnauthorized, domain.NewAPIError(domain.ErrUserNotProvisioned, domain.CodeUserNotProvisioned))
 	}
 
