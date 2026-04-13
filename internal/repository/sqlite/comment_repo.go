@@ -42,17 +42,16 @@ func (r *CommentRepository) GetByContentID(ctx context.Context, contentID string
 	if err != nil {
 		return nil, err
 	}
+	defer rows.Close() // Fix #6: ensure rows are always closed via defer
 
 	var comments []domain.Comment
 	for rows.Next() {
 		comment, err := r.scanCommentWithUserFromRows(rows)
 		if err != nil {
-			rows.Close()
 			return nil, err
 		}
 		comments = append(comments, *comment)
 	}
-	rows.Close()
 
 	if err := rows.Err(); err != nil {
 		return nil, err

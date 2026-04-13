@@ -13,6 +13,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/twttr/kpuppy-backend/internal/domain"
+	custommw "github.com/twttr/kpuppy-backend/internal/middleware"
 	"github.com/twttr/kpuppy-backend/internal/repository/sqlite"
 	"github.com/twttr/kpuppy-backend/internal/usecase"
 	"github.com/twttr/kpuppy-backend/internal/websocket"
@@ -109,9 +110,9 @@ func TestCommentHandler_CreateComment_Success(t *testing.T) {
 
 	req := httptest.NewRequest(http.MethodPost, "/content/12345/comments", bytes.NewReader(body))
 	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
-	req.Header.Set("X-User-ID", user.ID)
 	rec := httptest.NewRecorder()
 	c := e.NewContext(req, rec)
+	c.Set(custommw.UserIDContextKey, user.ID)
 	c.SetParamNames("kinopubItemId")
 	c.SetParamValues("12345")
 
@@ -142,6 +143,7 @@ func TestCommentHandler_CreateComment_NoUserID(t *testing.T) {
 	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	rec := httptest.NewRecorder()
 	c := e.NewContext(req, rec)
+	// No user ID in context — should return 401
 	c.SetParamNames("kinopubItemId")
 	c.SetParamValues("12345")
 
@@ -165,9 +167,9 @@ func TestCommentHandler_CreateComment_EmptyText(t *testing.T) {
 
 	req := httptest.NewRequest(http.MethodPost, "/content/12345/comments", bytes.NewReader(body))
 	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
-	req.Header.Set("X-User-ID", user.ID)
 	rec := httptest.NewRecorder()
 	c := e.NewContext(req, rec)
+	c.Set(custommw.UserIDContextKey, user.ID)
 	c.SetParamNames("kinopubItemId")
 	c.SetParamValues("12345")
 
@@ -189,9 +191,9 @@ func TestCommentHandler_ReplyToComment_Success(t *testing.T) {
 	createBody, _ := json.Marshal(createReqBody)
 	createReq := httptest.NewRequest(http.MethodPost, "/content/12345/comments", bytes.NewReader(createBody))
 	createReq.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
-	createReq.Header.Set("X-User-ID", user.ID)
 	createRec := httptest.NewRecorder()
 	createCtx := e.NewContext(createReq, createRec)
+	createCtx.Set(custommw.UserIDContextKey, user.ID)
 	createCtx.SetParamNames("kinopubItemId")
 	createCtx.SetParamValues("12345")
 
@@ -206,9 +208,9 @@ func TestCommentHandler_ReplyToComment_Success(t *testing.T) {
 	replyBody, _ := json.Marshal(replyReqBody)
 	replyReq := httptest.NewRequest(http.MethodPost, "/comments/"+parentComment.ID+"/reply", bytes.NewReader(replyBody))
 	replyReq.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
-	replyReq.Header.Set("X-User-ID", user.ID)
 	replyRec := httptest.NewRecorder()
 	replyCtx := e.NewContext(replyReq, replyRec)
+	replyCtx.Set(custommw.UserIDContextKey, user.ID)
 	replyCtx.SetParamNames("commentId")
 	replyCtx.SetParamValues(parentComment.ID)
 
@@ -234,9 +236,9 @@ func TestCommentHandler_UpdateComment_Success(t *testing.T) {
 	createBody, _ := json.Marshal(createReqBody)
 	createReq := httptest.NewRequest(http.MethodPost, "/content/12345/comments", bytes.NewReader(createBody))
 	createReq.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
-	createReq.Header.Set("X-User-ID", user.ID)
 	createRec := httptest.NewRecorder()
 	createCtx := e.NewContext(createReq, createRec)
+	createCtx.Set(custommw.UserIDContextKey, user.ID)
 	createCtx.SetParamNames("kinopubItemId")
 	createCtx.SetParamValues("12345")
 
@@ -251,9 +253,9 @@ func TestCommentHandler_UpdateComment_Success(t *testing.T) {
 	updateBody, _ := json.Marshal(updateReqBody)
 	updateReq := httptest.NewRequest(http.MethodPatch, "/comments/"+comment.ID, bytes.NewReader(updateBody))
 	updateReq.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
-	updateReq.Header.Set("X-User-ID", user.ID)
 	updateRec := httptest.NewRecorder()
 	updateCtx := e.NewContext(updateReq, updateRec)
+	updateCtx.Set(custommw.UserIDContextKey, user.ID)
 	updateCtx.SetParamNames("commentId")
 	updateCtx.SetParamValues(comment.ID)
 
@@ -281,9 +283,9 @@ func TestCommentHandler_UpdateComment_NotOwner(t *testing.T) {
 	createBody, _ := json.Marshal(createReqBody)
 	createReq := httptest.NewRequest(http.MethodPost, "/content/12345/comments", bytes.NewReader(createBody))
 	createReq.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
-	createReq.Header.Set("X-User-ID", user1.ID)
 	createRec := httptest.NewRecorder()
 	createCtx := e.NewContext(createReq, createRec)
+	createCtx.Set(custommw.UserIDContextKey, user1.ID)
 	createCtx.SetParamNames("kinopubItemId")
 	createCtx.SetParamValues("12345")
 
@@ -297,9 +299,9 @@ func TestCommentHandler_UpdateComment_NotOwner(t *testing.T) {
 	updateBody, _ := json.Marshal(updateReqBody)
 	updateReq := httptest.NewRequest(http.MethodPatch, "/comments/"+comment.ID, bytes.NewReader(updateBody))
 	updateReq.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
-	updateReq.Header.Set("X-User-ID", user2.ID)
 	updateRec := httptest.NewRecorder()
 	updateCtx := e.NewContext(updateReq, updateRec)
+	updateCtx.Set(custommw.UserIDContextKey, user2.ID)
 	updateCtx.SetParamNames("commentId")
 	updateCtx.SetParamValues(comment.ID)
 
@@ -321,9 +323,9 @@ func TestCommentHandler_DeleteComment_Success(t *testing.T) {
 	createBody, _ := json.Marshal(createReqBody)
 	createReq := httptest.NewRequest(http.MethodPost, "/content/12345/comments", bytes.NewReader(createBody))
 	createReq.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
-	createReq.Header.Set("X-User-ID", user.ID)
 	createRec := httptest.NewRecorder()
 	createCtx := e.NewContext(createReq, createRec)
+	createCtx.Set(custommw.UserIDContextKey, user.ID)
 	createCtx.SetParamNames("kinopubItemId")
 	createCtx.SetParamValues("12345")
 
@@ -334,9 +336,9 @@ func TestCommentHandler_DeleteComment_Success(t *testing.T) {
 	json.Unmarshal(createRec.Body.Bytes(), &comment)
 
 	deleteReq := httptest.NewRequest(http.MethodDelete, "/comments/"+comment.ID, nil)
-	deleteReq.Header.Set("X-User-ID", user.ID)
 	deleteRec := httptest.NewRecorder()
 	deleteCtx := e.NewContext(deleteReq, deleteRec)
+	deleteCtx.Set(custommw.UserIDContextKey, user.ID)
 	deleteCtx.SetParamNames("commentId")
 	deleteCtx.SetParamValues(comment.ID)
 
@@ -359,9 +361,9 @@ func TestCommentHandler_DeleteComment_NotOwner(t *testing.T) {
 	createBody, _ := json.Marshal(createReqBody)
 	createReq := httptest.NewRequest(http.MethodPost, "/content/12345/comments", bytes.NewReader(createBody))
 	createReq.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
-	createReq.Header.Set("X-User-ID", user1.ID)
 	createRec := httptest.NewRecorder()
 	createCtx := e.NewContext(createReq, createRec)
+	createCtx.Set(custommw.UserIDContextKey, user1.ID)
 	createCtx.SetParamNames("kinopubItemId")
 	createCtx.SetParamValues("12345")
 
@@ -372,9 +374,9 @@ func TestCommentHandler_DeleteComment_NotOwner(t *testing.T) {
 	json.Unmarshal(createRec.Body.Bytes(), &comment)
 
 	deleteReq := httptest.NewRequest(http.MethodDelete, "/comments/"+comment.ID, nil)
-	deleteReq.Header.Set("X-User-ID", user2.ID)
 	deleteRec := httptest.NewRecorder()
 	deleteCtx := e.NewContext(deleteReq, deleteRec)
+	deleteCtx.Set(custommw.UserIDContextKey, user2.ID)
 	deleteCtx.SetParamNames("commentId")
 	deleteCtx.SetParamValues(comment.ID)
 
@@ -397,9 +399,9 @@ func TestCommentHandler_GetComments_ReturnsAllComments(t *testing.T) {
 		body, _ := json.Marshal(reqBody)
 		req := httptest.NewRequest(http.MethodPost, "/content/12345/comments", bytes.NewReader(body))
 		req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
-		req.Header.Set("X-User-ID", user.ID)
 		rec := httptest.NewRecorder()
 		c := e.NewContext(req, rec)
+		c.Set(custommw.UserIDContextKey, user.ID)
 		c.SetParamNames("kinopubItemId")
 		c.SetParamValues("12345")
 		handler.CreateComment(c)
@@ -434,9 +436,9 @@ func TestCommentHandler_CreateComment_BannedUser(t *testing.T) {
 
 	req := httptest.NewRequest(http.MethodPost, "/content/12345/comments", bytes.NewReader(body))
 	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
-	req.Header.Set("X-User-ID", user.ID)
 	rec := httptest.NewRecorder()
 	c := e.NewContext(req, rec)
+	c.Set(custommw.UserIDContextKey, user.ID)
 	c.SetParamNames("kinopubItemId")
 	c.SetParamValues("12345")
 
@@ -456,9 +458,9 @@ func TestCommentHandler_CreateComment_UserNotFound(t *testing.T) {
 
 	req := httptest.NewRequest(http.MethodPost, "/content/12345/comments", bytes.NewReader(body))
 	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
-	req.Header.Set("X-User-ID", "nonexistent-user")
 	rec := httptest.NewRecorder()
 	c := e.NewContext(req, rec)
+	c.Set(custommw.UserIDContextKey, "nonexistent-user-id")
 	c.SetParamNames("kinopubItemId")
 	c.SetParamValues("12345")
 
@@ -484,9 +486,9 @@ func TestCommentHandler_CreateComment_CommentTooLong(t *testing.T) {
 
 	req := httptest.NewRequest(http.MethodPost, "/content/12345/comments", bytes.NewReader(body))
 	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
-	req.Header.Set("X-User-ID", user.ID)
 	rec := httptest.NewRecorder()
 	c := e.NewContext(req, rec)
+	c.Set(custommw.UserIDContextKey, user.ID)
 	c.SetParamNames("kinopubItemId")
 	c.SetParamValues("12345")
 
@@ -508,6 +510,7 @@ func TestCommentHandler_ReplyToComment_NoUserID(t *testing.T) {
 	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	rec := httptest.NewRecorder()
 	c := e.NewContext(req, rec)
+	// No user ID in context — should return 401
 	c.SetParamNames("commentId")
 	c.SetParamValues("some-id")
 
@@ -529,9 +532,9 @@ func TestCommentHandler_ReplyToComment_ParentNotFound(t *testing.T) {
 
 	req := httptest.NewRequest(http.MethodPost, "/comments/nonexistent/reply", bytes.NewReader(body))
 	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
-	req.Header.Set("X-User-ID", user.ID)
 	rec := httptest.NewRecorder()
 	c := e.NewContext(req, rec)
+	c.Set(custommw.UserIDContextKey, user.ID)
 	c.SetParamNames("commentId")
 	c.SetParamValues("nonexistent")
 
@@ -553,9 +556,9 @@ func TestCommentHandler_ReplyToComment_NestedReplies(t *testing.T) {
 	createBody, _ := json.Marshal(createReqBody)
 	createReq := httptest.NewRequest(http.MethodPost, "/content/12345/comments", bytes.NewReader(createBody))
 	createReq.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
-	createReq.Header.Set("X-User-ID", user.ID)
 	createRec := httptest.NewRecorder()
 	createCtx := e.NewContext(createReq, createRec)
+	createCtx.Set(custommw.UserIDContextKey, user.ID)
 	createCtx.SetParamNames("kinopubItemId")
 	createCtx.SetParamValues("12345")
 	handler.CreateComment(createCtx)
@@ -567,9 +570,9 @@ func TestCommentHandler_ReplyToComment_NestedReplies(t *testing.T) {
 	replyBody, _ := json.Marshal(replyReqBody)
 	replyReq := httptest.NewRequest(http.MethodPost, "/comments/"+parentComment.ID+"/reply", bytes.NewReader(replyBody))
 	replyReq.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
-	replyReq.Header.Set("X-User-ID", user.ID)
 	replyRec := httptest.NewRecorder()
 	replyCtx := e.NewContext(replyReq, replyRec)
+	replyCtx.Set(custommw.UserIDContextKey, user.ID)
 	replyCtx.SetParamNames("commentId")
 	replyCtx.SetParamValues(parentComment.ID)
 	handler.ReplyToComment(replyCtx)
@@ -580,9 +583,9 @@ func TestCommentHandler_ReplyToComment_NestedReplies(t *testing.T) {
 	nestedReplyBody, _ := json.Marshal(domain.CreateCommentRequest{Text: "nested reply"})
 	nestedReplyReq := httptest.NewRequest(http.MethodPost, "/comments/"+reply.ID+"/reply", bytes.NewReader(nestedReplyBody))
 	nestedReplyReq.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
-	nestedReplyReq.Header.Set("X-User-ID", user.ID)
 	nestedReplyRec := httptest.NewRecorder()
 	nestedReplyCtx := e.NewContext(nestedReplyReq, nestedReplyRec)
+	nestedReplyCtx.Set(custommw.UserIDContextKey, user.ID)
 	nestedReplyCtx.SetParamNames("commentId")
 	nestedReplyCtx.SetParamValues(reply.ID)
 
@@ -609,6 +612,7 @@ func TestCommentHandler_UpdateComment_NoUserID(t *testing.T) {
 	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	rec := httptest.NewRecorder()
 	c := e.NewContext(req, rec)
+	// No user ID in context — should return 401
 	c.SetParamNames("commentId")
 	c.SetParamValues("some-id")
 
@@ -630,9 +634,9 @@ func TestCommentHandler_UpdateComment_NotFound(t *testing.T) {
 
 	req := httptest.NewRequest(http.MethodPatch, "/comments/nonexistent", bytes.NewReader(body))
 	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
-	req.Header.Set("X-User-ID", user.ID)
 	rec := httptest.NewRecorder()
 	c := e.NewContext(req, rec)
+	c.Set(custommw.UserIDContextKey, user.ID)
 	c.SetParamNames("commentId")
 	c.SetParamValues("nonexistent")
 
@@ -651,6 +655,7 @@ func TestCommentHandler_DeleteComment_NoUserID(t *testing.T) {
 	req := httptest.NewRequest(http.MethodDelete, "/comments/some-id", nil)
 	rec := httptest.NewRecorder()
 	c := e.NewContext(req, rec)
+	// No user ID in context — should return 401
 	c.SetParamNames("commentId")
 	c.SetParamValues("some-id")
 
@@ -669,9 +674,9 @@ func TestCommentHandler_DeleteComment_NotFound(t *testing.T) {
 	e := echo.New()
 
 	req := httptest.NewRequest(http.MethodDelete, "/comments/nonexistent", nil)
-	req.Header.Set("X-User-ID", user.ID)
 	rec := httptest.NewRecorder()
 	c := e.NewContext(req, rec)
+	c.Set(custommw.UserIDContextKey, user.ID)
 	c.SetParamNames("commentId")
 	c.SetParamValues("nonexistent")
 
@@ -693,9 +698,9 @@ func TestCommentHandler_DeleteComment_AlreadyDeleted(t *testing.T) {
 	createBody, _ := json.Marshal(createReqBody)
 	createReq := httptest.NewRequest(http.MethodPost, "/content/12345/comments", bytes.NewReader(createBody))
 	createReq.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
-	createReq.Header.Set("X-User-ID", user.ID)
 	createRec := httptest.NewRecorder()
 	createCtx := e.NewContext(createReq, createRec)
+	createCtx.Set(custommw.UserIDContextKey, user.ID)
 	createCtx.SetParamNames("kinopubItemId")
 	createCtx.SetParamValues("12345")
 	handler.CreateComment(createCtx)
@@ -704,17 +709,17 @@ func TestCommentHandler_DeleteComment_AlreadyDeleted(t *testing.T) {
 	json.Unmarshal(createRec.Body.Bytes(), &comment)
 
 	deleteReq1 := httptest.NewRequest(http.MethodDelete, "/comments/"+comment.ID, nil)
-	deleteReq1.Header.Set("X-User-ID", user.ID)
 	deleteRec1 := httptest.NewRecorder()
 	deleteCtx1 := e.NewContext(deleteReq1, deleteRec1)
+	deleteCtx1.Set(custommw.UserIDContextKey, user.ID)
 	deleteCtx1.SetParamNames("commentId")
 	deleteCtx1.SetParamValues(comment.ID)
 	handler.DeleteComment(deleteCtx1)
 
 	deleteReq2 := httptest.NewRequest(http.MethodDelete, "/comments/"+comment.ID, nil)
-	deleteReq2.Header.Set("X-User-ID", user.ID)
 	deleteRec2 := httptest.NewRecorder()
 	deleteCtx2 := e.NewContext(deleteReq2, deleteRec2)
+	deleteCtx2.Set(custommw.UserIDContextKey, user.ID)
 	deleteCtx2.SetParamNames("commentId")
 	deleteCtx2.SetParamValues(comment.ID)
 

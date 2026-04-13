@@ -16,9 +16,10 @@ type Config struct {
 }
 
 type ServerConfig struct {
-	Port     int
-	Host     string
-	BasePath string
+	Port           int
+	Host           string
+	BasePath       string
+	AllowedOrigins []string
 }
 
 type DatabaseConfig struct {
@@ -44,9 +45,10 @@ func Load() *Config {
 
 	return &Config{
 		Server: ServerConfig{
-			Port:     getEnvInt("PORT", 8080),
-			Host:     getEnv("HOST", "0.0.0.0"),
-			BasePath: getEnv("BASE_PATH", ""),
+			Port:           getEnvInt("PORT", 8080),
+			Host:           getEnv("HOST", "0.0.0.0"),
+			BasePath:       getEnv("BASE_PATH", ""),
+			AllowedOrigins: getEnvSlice("ALLOWED_ORIGINS", nil),
 		},
 		Database: DatabaseConfig{
 			Path: getEnv("DB_PATH", "./data/kpuppy.db"),
@@ -77,6 +79,20 @@ func getEnvInt(key string, defaultVal int) int {
 		if i, err := strconv.Atoi(val); err == nil {
 			return i
 		}
+	}
+	return defaultVal
+}
+
+func getEnvSlice(key string, defaultVal []string) []string {
+	if val := os.Getenv(key); val != "" {
+		parts := strings.Split(val, ",")
+		result := make([]string, 0, len(parts))
+		for _, p := range parts {
+			if s := strings.TrimSpace(p); s != "" {
+				result = append(result, s)
+			}
+		}
+		return result
 	}
 	return defaultVal
 }
